@@ -1,0 +1,124 @@
+{
+	"info": {
+		"_postman_id": "565ef7a6-8d31-488e-9690-0a77dc52637f",
+		"name": "Slice creation demo",
+		"description": "This Demo is made for my Thesis.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30113177",
+		"_collection_link": "https://grey-shuttle-501021.postman.co/workspace/11.19~a89459f9-ca4c-4915-9ad4-aab54b115170/collection/30113177-565ef7a6-8d31-488e-9690-0a77dc52637f?action=share&source=collection_link&creator=30113177"
+	},
+	"item": [
+		{
+			"name": "Slice Creation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status ok\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"let r = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Operation status ok\", function() {\r",
+							"    pm.expect(r.status).to.equal(\"OperationAcknowledged\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"orderItemMap\": {\r\n        \"order\": {\r\n            \"operation\": \"CreateSlice\",\r\n            \"specification\": {\r\n                \"name\": \"Slicing-Demo\",\r\n                \"version\": \"1.0.0-SNAPSHOT\"\r\n            },\r\n            \"parameters\": {\r\n                \"NSSAI\": \"eMBB\",\r\n                \"Latency\": 1,\r\n                \"Throughput\": 120,\r\n                \"Availability\": 98.2\r\n                \r\n            }\r\n        }\r\n    },\r\n    \"description\": \"Slice Creation\",\r\n    \"category\": \"1.0.0-SNAPSHOT\",\r\n    \"referenceMap\": {\r\n        \"externalId\": \"{{user}}\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Nokia_Internal_url}}",
+					"host": [
+						"{{Nokia_Internal_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authorization",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var data = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable('access_token', data.access_token);\r",
+							"postman.setEnvironmentVariable('refresh_token', data.refresh_token);\r",
+							"\r",
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{client}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{Nokia_Internal_authorization_url}}",
+					"host": [
+						"{{Nokia_Internal_authorization_url}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "Nokia_Internal_url",
+			"value": "https://ckey.apps.env101.ocp.5gslicing.dyn.nesc.nokia.net/apigw/doc-norc/ordermanagement/api/v1/orders"
+		}
+	]
+}
