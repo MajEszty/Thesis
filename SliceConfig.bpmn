@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1ujnhx9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
+  <bpmn:process id="SliceConfig" name="Slice Configuration" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0tnmcmg</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="Gateway_1g66vdd" default="Flow_027mphb">
+      <bpmn:incoming>Flow_0tnmcmg</bpmn:incoming>
+      <bpmn:outgoing>Flow_027mphb</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0kiy7p7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1r36i73</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0nvhgtv">
+      <bpmn:incoming>Flow_0qkmyx5</bpmn:incoming>
+      <bpmn:incoming>Flow_0teo71c</bpmn:incoming>
+      <bpmn:incoming>Flow_0c8r0c3</bpmn:incoming>
+      <bpmn:outgoing>Flow_1r38fpj</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_0ujbn1k">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=if ($input == &#34;snssai1&#34;) {&#10;    return embb.result;&#10;} else if ($input == &#34;snssai2&#34;) {&#10;    return urllc.result;&#10;} else {&#10;    return mmtc.result;&#10;}" target="result" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1r38fpj</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0tnmcmg" sourceRef="StartEvent_1" targetRef="Gateway_1g66vdd" />
+    <bpmn:sequenceFlow id="Flow_1r38fpj" sourceRef="Gateway_0nvhgtv" targetRef="Event_0ujbn1k" />
+    <bpmn:sequenceFlow id="Flow_027mphb" sourceRef="Gateway_1g66vdd" targetRef="embb" />
+    <bpmn:sequenceFlow id="Flow_0kiy7p7" sourceRef="Gateway_1g66vdd" targetRef="mmtc">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=$input == "snssai3"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1r36i73" sourceRef="Gateway_1g66vdd" targetRef="urllc">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=$input == "snssai2"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0qkmyx5" sourceRef="embb" targetRef="Gateway_0nvhgtv" />
+    <bpmn:sequenceFlow id="Flow_0teo71c" sourceRef="urllc" targetRef="Gateway_0nvhgtv" />
+    <bpmn:sequenceFlow id="Flow_0c8r0c3" sourceRef="mmtc" targetRef="Gateway_0nvhgtv" />
+    <bpmn:serviceTask id="embb" name="eMBB config">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var config={&#10;    &#34;sliceName&#34;: &#34;eMBBSlice&#34;,&#10;    &#34;qosParameter&#34;:{&#10;        &#34;bandwidth&#34;:&#34;100 Mbps&#34;,&#10;        &#34;priority&#34;: &#34;High&#34;,&#10;        &#34;serviceTpe&#34;: &#34;Best Effort&#34;&#10;    },&#10;    &#34;application&#34;: &#34;Streaming Video&#34;  &#10;};&#10;return config                                                 " target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_027mphb</bpmn:incoming>
+      <bpmn:outgoing>Flow_0qkmyx5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="urllc" name="uRLLC config">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var config={&#10;    &#34;sliceName&#34;: &#34;uRLLCSlice&#34;,&#10;    &#34;qosParameter&#34;:{&#10;        &#34;packetLossRate&#34;:&#34;0.001%&#34;,&#10;        &#34;priority&#34;: &#34;High&#34;,&#10;        &#34;serviceTpe&#34;: &#34;Guaranteed&#34;&#10;    },&#10;    &#34;application&#34;: &#34;Autonomous vehicles&#34;  &#10;};&#10;return config;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1r36i73</bpmn:incoming>
+      <bpmn:outgoing>Flow_0teo71c</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="mmtc" name="mMTC config">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var config={&#10;    &#34;sliceName&#34;: &#34;mMTCSlice&#34;,&#10;    &#34;qosParameter&#34;:{&#10;        &#34;bandwith&#34;:&#34;10 Kbps&#34;,&#10;        &#34;priority&#34;: &#34;Low&#34;,&#10;        &#34;serviceTpe&#34;: &#34;Best Effort&#34;&#10;    },&#10;    &#34;application&#34;: &#34;Massive IoT deployment&#34;  &#10;};&#10;return config;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0kiy7p7</bpmn:incoming>
+      <bpmn:outgoing>Flow_0c8r0c3</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SliceConfig">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1g66vdd_di" bpmnElement="Gateway_1g66vdd" isMarkerVisible="true">
+        <dc:Bounds x="255" y="222" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0nvhgtv_di" bpmnElement="Gateway_0nvhgtv" isMarkerVisible="true">
+        <dc:Bounds x="575" y="222" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ujbn1k_di" bpmnElement="Event_0ujbn1k">
+        <dc:Bounds x="682" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0dbvdx7_di" bpmnElement="embb">
+        <dc:Bounds x="390" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ph5nss_di" bpmnElement="urllc">
+        <dc:Bounds x="390" y="207" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ajp2fu_di" bpmnElement="mmtc">
+        <dc:Bounds x="390" y="340" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0tnmcmg_di" bpmnElement="Flow_0tnmcmg">
+        <di:waypoint x="215" y="247" />
+        <di:waypoint x="255" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1r38fpj_di" bpmnElement="Flow_1r38fpj">
+        <di:waypoint x="625" y="247" />
+        <di:waypoint x="682" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_027mphb_di" bpmnElement="Flow_027mphb">
+        <di:waypoint x="280" y="222" />
+        <di:waypoint x="280" y="120" />
+        <di:waypoint x="390" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kiy7p7_di" bpmnElement="Flow_0kiy7p7">
+        <di:waypoint x="280" y="272" />
+        <di:waypoint x="280" y="380" />
+        <di:waypoint x="390" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1r36i73_di" bpmnElement="Flow_1r36i73">
+        <di:waypoint x="305" y="247" />
+        <di:waypoint x="390" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qkmyx5_di" bpmnElement="Flow_0qkmyx5">
+        <di:waypoint x="490" y="120" />
+        <di:waypoint x="600" y="120" />
+        <di:waypoint x="600" y="222" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0teo71c_di" bpmnElement="Flow_0teo71c">
+        <di:waypoint x="490" y="247" />
+        <di:waypoint x="575" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0c8r0c3_di" bpmnElement="Flow_0c8r0c3">
+        <di:waypoint x="490" y="380" />
+        <di:waypoint x="600" y="380" />
+        <di:waypoint x="600" y="272" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

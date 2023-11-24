@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1odzcba" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
+  <bpmn:process id="CreateSlice" name="Create Slice" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Start event">
+      <bpmn:outgoing>Flow_1j8cgiz</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1j8cgiz" sourceRef="StartEvent_1" targetRef="logInput" />
+    <bpmn:serviceTask id="verify_sla_requirements" name="Verify SLA Requirements">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var sla = true;&#10;var SLALatency = 1;&#10;var SLAThroughput = 100;&#10;var SLAAvailability = 95.5;&#10;&#10;if ($input.Latency &#62; SLALatency || $input.Throughput &#60; SLAThroughput || $input.Availability &#60; SLAAvailability) {&#10;    sla = false;&#10;}&#10;&#10;return sla;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_07n5zmu</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gx63fj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_07n5zmu" sourceRef="logInput" targetRef="verify_sla_requirements" />
+    <bpmn:serviceTask id="logInput" name="Log input">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia logger" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=$input" target="message" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1j8cgiz</bpmn:incoming>
+      <bpmn:outgoing>Flow_07n5zmu</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0vy4qh4" default="Flow_1it6pcv">
+      <bpmn:incoming>Flow_1gx63fj</bpmn:incoming>
+      <bpmn:outgoing>Flow_02yi847</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1it6pcv</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1gx63fj" sourceRef="verify_sla_requirements" targetRef="Gateway_0vy4qh4" />
+    <bpmn:exclusiveGateway id="Gateway_0q7todq" default="Flow_1c7kzqk">
+      <bpmn:incoming>Flow_093w4v9</bpmn:incoming>
+      <bpmn:outgoing>Flow_1dhtk5z</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1c7kzqk</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_0ackv30">
+      <bpmn:incoming>Flow_1prinib</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_1gu2x0u">
+      <bpmn:incoming>Flow_0brxnoc</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_0n5lpbw" name="End event&#10;">
+      <bpmn:incoming>Flow_1l30mxy</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_02yi847" sourceRef="Gateway_0vy4qh4" targetRef="slaError">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=verify_sla_requirements.result != true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1it6pcv" sourceRef="Gateway_0vy4qh4" targetRef="SliceType" />
+    <bpmn:serviceTask id="slaError" name="SLA Requirements Error">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia Error Acticity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=&#34;The input did not meet the SLA Requirements&#34;" target="errorMessage" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_02yi847</bpmn:incoming>
+      <bpmn:outgoing>Flow_1prinib</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1prinib" sourceRef="slaError" targetRef="Event_0ackv30" />
+    <bpmn:serviceTask id="sliceTypeError" name="Incorrect Slice Type">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia Error Acticity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=&#34;The Slice Type was incorrect&#34;" target="errorMessage" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1dhtk5z</bpmn:incoming>
+      <bpmn:outgoing>Flow_0brxnoc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SliceType" name="Determine Slice Type">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var sliceTypes = {&#10;    &#34;eMBB&#34;: &#34;snssai1&#34;,&#10;    &#34;uRLLC&#34;: &#34;snssai2&#34;,&#10;    &#34;mMTC&#34;: &#34;snssai3&#34;&#10;};&#10;&#10;var inputNSSAI = $input.NSSAI;&#10;var selectedSlice = &#34;&#34;;&#10;&#10;selectedSlice = sliceTypes[inputNSSAI];&#10;&#10;return selectedSlice;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1it6pcv</bpmn:incoming>
+      <bpmn:outgoing>Flow_093w4v9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_093w4v9" sourceRef="SliceType" targetRef="Gateway_0q7todq" />
+    <bpmn:sequenceFlow id="Flow_1dhtk5z" sourceRef="Gateway_0q7todq" targetRef="sliceTypeError">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=SliceType.result == null || SliceType.result == ""</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1c7kzqk" sourceRef="Gateway_0q7todq" targetRef="sliceConfig" />
+    <bpmn:sequenceFlow id="Flow_0brxnoc" sourceRef="sliceTypeError" targetRef="Event_1gu2x0u" />
+    <bpmn:callActivity id="sliceConfig" name="Determine Slice Configuration">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="SliceConfig" propagateAllChildVariables="false" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=SliceType.result;" target="sliceType" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1c7kzqk</bpmn:incoming>
+      <bpmn:outgoing>Flow_08kgskg</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="nfv_resources" name="Determine NFV Resources">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="SMFConfig" propagateAllChildVariables="false" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=sliceType.result;" target="sliceType" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1inqaiv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0a4hfmt</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="provision" name="Provision Network Resources">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity on the server" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var sliceConfiguration = sliceConfig.result;&#10;var nfConfig = nfv_resources.result;&#10;var sliceType = SliceType.result;&#10;&#10;&#10;&#34;commands&#34;: [&#10;   &#34;cd /root/demo&#34;,&#10;   &#34;tmp=$(mktemp)&#34;,&#10;   &#34;jq -c &#39;(.values[] | select(.key | contains(\&#34;sliceConfiguration\&#34;)) | .value) |= \&#34;&#34; + sliceConfiguration + &#34;\&#34;&#39; configurations.json &#38;gt; \&#34;$tmp\&#34;&#34;,&#10;   &#34;mv \&#34;$tmp\&#34; configurations.json --force&#34;,&#10;   &#34;jq -c &#39;(.values[] | select(.key | contains(\&#34;nfConfig\&#34;)) | .value) |= \&#34;&#34; + nfConfig + &#34;\&#34;&#39; configurations.json &#38;gt; \&#34;$tmp\&#34;&#34;,&#10;   &#34;mv \&#34;$tmp\&#34; configurations.json --force&#34;,&#10;   &#34;jq -c &#39;(.values[] | select(.key | contains(\&#34;sliceType\&#34;)) | .value) |= \&#34;&#34; + sliceType + &#34;\&#34;&#39; configurations.json &#38;gt; \&#34;$tmp\&#34;&#34;,&#10;   &#34;mv \&#34;$tmp\&#34; configurations.json --force&#34;,&#10;   &#34;docker build -t slice --no-cache .&#34;,&#10;   &#34;docker run --network=\&#34;host\&#34; slice&#34;&#10;]" target="payload" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0sph1fv</bpmn:incoming>
+      <bpmn:outgoing>Flow_1l30mxy</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="nfv_log" name="Log NFV Resources">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia logger" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=nfv_resources.result" target="message" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0a4hfmt</bpmn:incoming>
+      <bpmn:outgoing>Flow_0sph1fv</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="sliceConfigLog" name="Log Slice Configuration">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia logger" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=sliceConfig.result;" target="message" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_08kgskg</bpmn:incoming>
+      <bpmn:outgoing>Flow_1inqaiv</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08kgskg" sourceRef="sliceConfig" targetRef="sliceConfigLog" />
+    <bpmn:sequenceFlow id="Flow_1inqaiv" sourceRef="sliceConfigLog" targetRef="nfv_resources" />
+    <bpmn:sequenceFlow id="Flow_0a4hfmt" sourceRef="nfv_resources" targetRef="nfv_log" />
+    <bpmn:sequenceFlow id="Flow_0sph1fv" sourceRef="nfv_log" targetRef="provision" />
+    <bpmn:sequenceFlow id="Flow_1l30mxy" sourceRef="provision" targetRef="Event_0n5lpbw" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="CreateSlice">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="122" width="56" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1fdrslq_di" bpmnElement="logInput">
+        <dc:Bounds x="280" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0acykr2_di" bpmnElement="verify_sla_requirements">
+        <dc:Bounds x="440" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0vy4qh4_di" bpmnElement="Gateway_0vy4qh4" isMarkerVisible="true">
+        <dc:Bounds x="595" y="72" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0q7todq_di" bpmnElement="Gateway_0q7todq" isMarkerVisible="true">
+        <dc:Bounds x="915" y="72" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ackv30_di" bpmnElement="Event_0ackv30">
+        <dc:Bounds x="602" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1gu2x0u_di" bpmnElement="Event_1gu2x0u">
+        <dc:Bounds x="922" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12k7p1w_di" bpmnElement="slaError">
+        <dc:Bounds x="570" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1xochuk_di" bpmnElement="sliceTypeError">
+        <dc:Bounds x="890" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hn39oj_di" bpmnElement="SliceType">
+        <dc:Bounds x="730" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vnqdcs_di" bpmnElement="sliceConfig">
+        <dc:Bounds x="1040" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1n6v8ng_di" bpmnElement="nfv_resources">
+        <dc:Bounds x="1390" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_14ufaxc_di" bpmnElement="sliceConfigLog">
+        <dc:Bounds x="1210" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0sj76df_di" bpmnElement="nfv_log">
+        <dc:Bounds x="1560" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0z5tnig_di" bpmnElement="provision">
+        <dc:Bounds x="1730" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0n5lpbw_di" bpmnElement="Event_0n5lpbw">
+        <dc:Bounds x="1902" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1894" y="122" width="52" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1j8cgiz_di" bpmnElement="Flow_1j8cgiz">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="280" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07n5zmu_di" bpmnElement="Flow_07n5zmu">
+        <di:waypoint x="380" y="97" />
+        <di:waypoint x="440" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gx63fj_di" bpmnElement="Flow_1gx63fj">
+        <di:waypoint x="540" y="97" />
+        <di:waypoint x="595" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02yi847_di" bpmnElement="Flow_02yi847">
+        <di:waypoint x="620" y="122" />
+        <di:waypoint x="620" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1it6pcv_di" bpmnElement="Flow_1it6pcv">
+        <di:waypoint x="645" y="97" />
+        <di:waypoint x="730" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1prinib_di" bpmnElement="Flow_1prinib">
+        <di:waypoint x="620" y="280" />
+        <di:waypoint x="620" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_093w4v9_di" bpmnElement="Flow_093w4v9">
+        <di:waypoint x="830" y="97" />
+        <di:waypoint x="915" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dhtk5z_di" bpmnElement="Flow_1dhtk5z">
+        <di:waypoint x="940" y="122" />
+        <di:waypoint x="940" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1c7kzqk_di" bpmnElement="Flow_1c7kzqk">
+        <di:waypoint x="965" y="97" />
+        <di:waypoint x="1040" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0brxnoc_di" bpmnElement="Flow_0brxnoc">
+        <di:waypoint x="940" y="280" />
+        <di:waypoint x="940" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08kgskg_di" bpmnElement="Flow_08kgskg">
+        <di:waypoint x="1140" y="97" />
+        <di:waypoint x="1210" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1inqaiv_di" bpmnElement="Flow_1inqaiv">
+        <di:waypoint x="1310" y="97" />
+        <di:waypoint x="1390" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0a4hfmt_di" bpmnElement="Flow_0a4hfmt">
+        <di:waypoint x="1490" y="97" />
+        <di:waypoint x="1560" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sph1fv_di" bpmnElement="Flow_0sph1fv">
+        <di:waypoint x="1660" y="97" />
+        <di:waypoint x="1730" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1l30mxy_di" bpmnElement="Flow_1l30mxy">
+        <di:waypoint x="1830" y="97" />
+        <di:waypoint x="1902" y="97" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

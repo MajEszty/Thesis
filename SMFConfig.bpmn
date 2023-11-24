@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0pj8bhl" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
+  <bpmn:process id="SMFConfig" name="SMF Configurations" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1p3042u</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="Gateway_05foimu" default="Flow_0ty28nr">
+      <bpmn:incoming>Flow_1p3042u</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ty28nr</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0jnk3o1</bpmn:outgoing>
+      <bpmn:outgoing>Flow_169wmq9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_11vpw5j">
+      <bpmn:incoming>Flow_1fjmdrd</bpmn:incoming>
+      <bpmn:incoming>Flow_0w0p8wm</bpmn:incoming>
+      <bpmn:incoming>Flow_0pznnmz</bpmn:incoming>
+      <bpmn:outgoing>Flow_0zy655p</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_1wd98eo">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=if ($input == &#34;snssai1&#34;) {&#10;    return embbSMF.result;&#10;} else if ($input == &#34;snssai2&#34;) {&#10;    return urllcSMF.result;&#10;} else {&#10;    return mmtcSMF.result;" target="result" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0zy655p</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0ty28nr" sourceRef="Gateway_05foimu" targetRef="embbSMF" />
+    <bpmn:sequenceFlow id="Flow_1p3042u" sourceRef="StartEvent_1" targetRef="Gateway_05foimu" />
+    <bpmn:sequenceFlow id="Flow_0zy655p" sourceRef="Gateway_11vpw5j" targetRef="Event_1wd98eo" />
+    <bpmn:sequenceFlow id="Flow_0jnk3o1" sourceRef="Gateway_05foimu" targetRef="urllcSMF">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=$input == "snssai2"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_169wmq9" sourceRef="Gateway_05foimu" targetRef="mmtcSMF">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=$input == "snssai3"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1fjmdrd" sourceRef="embbSMF" targetRef="Gateway_11vpw5j" />
+    <bpmn:sequenceFlow id="Flow_0w0p8wm" sourceRef="urllcSMF" targetRef="Gateway_11vpw5j" />
+    <bpmn:sequenceFlow id="Flow_0pznnmz" sourceRef="mmtcSMF" targetRef="Gateway_11vpw5j" />
+    <bpmn:serviceTask id="embbSMF" name="eMBB SMF Configuration">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var config={&#10;    &#34;networkArea&#34;: &#34;City Center&#34;,&#10;    &#34;trafficPolicy&#34;: &#34;High Bandwidth Allocation&#34;,&#10;    &#34;securityConfig&#34;: &#34;Standard Encryption&#34;   &#10;};&#10;return config;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ty28nr</bpmn:incoming>
+      <bpmn:outgoing>Flow_1fjmdrd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="urllcSMF" name="uRLLC SMF Configuration">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var config={&#10;    &#34;networkArea&#34;: &#34;Industrial Zone&#34;,&#10;    &#34;trafficPolicy&#34;: &#34;Low Latency Enforcement&#34;,&#10;    &#34;securityConfig&#34;: &#34;Enhanced Security Measures&#34;  &#10;};&#10;return config;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0jnk3o1</bpmn:incoming>
+      <bpmn:outgoing>Flow_0w0p8wm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="mmtcSMF" name="mMTC SMF Configuration">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Nokia activity" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=var config={&#10;    &#34;networkArea&#34;: &#34;Urban Suburb&#34;,&#10;    &#34;trafficPolicy&#34;: &#34;Device Connection Management&#34;,&#10;    &#34;securityConfig&#34;: &#34;Minimal Security for Low Power Devices&#34;  &#10;};&#10;return config;" target="input" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_169wmq9</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pznnmz</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SMFConfig">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="239" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_05foimu_di" bpmnElement="Gateway_05foimu" isMarkerVisible="true">
+        <dc:Bounds x="255" y="232" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_11vpw5j_di" bpmnElement="Gateway_11vpw5j" isMarkerVisible="true">
+        <dc:Bounds x="555" y="232" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wd98eo_di" bpmnElement="Event_1wd98eo">
+        <dc:Bounds x="652" y="239" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_046rhg2_di" bpmnElement="embbSMF">
+        <dc:Bounds x="380" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0r03f5j_di" bpmnElement="urllcSMF">
+        <dc:Bounds x="380" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0hl20l7_di" bpmnElement="mmtcSMF">
+        <dc:Bounds x="380" y="360" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ty28nr_di" bpmnElement="Flow_0ty28nr">
+        <di:waypoint x="280" y="232" />
+        <di:waypoint x="280" y="120" />
+        <di:waypoint x="380" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1p3042u_di" bpmnElement="Flow_1p3042u">
+        <di:waypoint x="215" y="257" />
+        <di:waypoint x="255" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zy655p_di" bpmnElement="Flow_0zy655p">
+        <di:waypoint x="605" y="257" />
+        <di:waypoint x="652" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jnk3o1_di" bpmnElement="Flow_0jnk3o1">
+        <di:waypoint x="305" y="257" />
+        <di:waypoint x="380" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_169wmq9_di" bpmnElement="Flow_169wmq9">
+        <di:waypoint x="280" y="282" />
+        <di:waypoint x="280" y="400" />
+        <di:waypoint x="380" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1fjmdrd_di" bpmnElement="Flow_1fjmdrd">
+        <di:waypoint x="480" y="120" />
+        <di:waypoint x="580" y="120" />
+        <di:waypoint x="580" y="232" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0w0p8wm_di" bpmnElement="Flow_0w0p8wm">
+        <di:waypoint x="480" y="257" />
+        <di:waypoint x="555" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pznnmz_di" bpmnElement="Flow_0pznnmz">
+        <di:waypoint x="480" y="400" />
+        <di:waypoint x="580" y="400" />
+        <di:waypoint x="580" y="282" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
