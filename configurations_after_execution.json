@@ -1,0 +1,17 @@
+{
+    "sliceConfiguration": "{
+        "sliceName": "eMBBSlice",
+        "qosParameter": {
+            "bandwidth": "100 Mbps",
+            "priority": "High",
+            "serviceTpe": "Best Effort"
+        },
+        "application": "Streaming Video"
+    }",
+    "nfConfig": "{
+        "networkArea": "City Center",
+        "trafficPolicy": "High Bandwidth Allocation",
+        "securityConfig": "Standard Encryption"
+    }",
+    "sliceType": "snssai1"
+}
